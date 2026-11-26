@@ -1,0 +1,5 @@
+<?php
+if($_SERVER['REQUEST_METHOD']==='POST'){
+try{verify_csrf();if(!admin())throw new RuntimeException('Acesso restrito.');$nome=trim($_POST['nome']??'');$desc=trim($_POST['descricao']??'');if(!$nome)throw new RuntimeException('Nome obrigatório.');$s=$conn->prepare('INSERT INTO categorias(nome,descricao) VALUES(?,?)');$s->bind_param('ss',$nome,$desc);$s->execute();flash('Categoria cadastrada.');}catch(Throwable $e){flash('Erro: '.$e->getMessage());}go('categorias');}
+$rows=$conn->query('SELECT c.id,c.nome,c.descricao,COUNT(e.id) AS total FROM categorias c LEFT JOIN equipamentos e ON e.categoria_id=c.id GROUP BY c.id,c.nome,c.descricao ORDER BY c.nome');
+?><h1>Categorias</h1><?php if(admin()):?><form method="post"><input type="hidden" name="csrf" value="<?=h(csrf())?>"><label>Nome<input name="nome" required></label><label>Descrição<input name="descricao"></label><button>Cadastrar categoria</button></form><?php endif;?><table><tr><th>Categoria</th><th>Descrição</th><th>Equipamentos</th></tr><?php while($r=$rows->fetch_assoc()):?><tr><td><?=h($r['nome'])?></td><td><?=h($r['descricao'])?></td><td><?=h($r['total'])?></td></tr><?php endwhile;?></table>
